@@ -171,50 +171,59 @@ export default async function CountriesPage({ searchParams }: PageProps) {
       {/* Countries Grid */}
       {list.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {list.map((c) => (
-            <Link
-              key={c.country}
-              href={`/countries/${c.country.toLowerCase().replace(/ /g, "_")}`}
-              className="group"
-            >
-              <Card className="h-full border-border/40 bg-card/20 hover:bg-card/45 hover:border-primary/30 transition-all shadow-sm group-hover:-translate-y-1 duration-200">
-                <CardContent className="p-4 flex flex-col h-full space-y-4">
-                  {/* Flag Container */}
-                  <div className="relative aspect-video w-full overflow-hidden rounded-lg border border-border/40 bg-muted/20">
-                    <FlagImage
-                      src={c.flagUrl}
-                      alt={`${c.geoName} flag`}
-                      className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
-
-                  {/* Metadata */}
-                  <div className="flex-1 flex flex-col justify-between space-y-2">
-                    <div>
-                      <h3 className="font-bold text-foreground group-hover:text-primary transition-colors text-base truncate">
-                        {c.geoName}
-                      </h3>
-                      <p className="text-xs text-muted-foreground font-mono mt-0.5 truncate uppercase">
-                        {c.country}
-                      </p>
+          {list.map((c) => {
+            const isMyanmar = c.country.toLowerCase() === "myanmar";
+            return (
+              <Link
+                key={c.country}
+                href={`/countries/${c.country.toLowerCase().replace(/ /g, "_")}`}
+                className="group"
+              >
+                <Card
+                  className={`h-full bg-card/20 hover:bg-card/45 hover:border-primary/30 hover:ring-primary/30 transition-all shadow-sm group-hover:-translate-y-1 duration-200 ${
+                    isMyanmar
+                      ? "border-primary/30 ring-primary/30"
+                      : "border-border/40"
+                  }`}
+                >
+                  <CardContent className="p-4 flex flex-col h-full space-y-4">
+                    {/* Flag Container */}
+                    <div className="relative aspect-video w-full overflow-hidden rounded-lg border border-border/40 bg-muted/20">
+                      <FlagImage
+                        src={c.flagUrl}
+                        alt={`${c.geoName} flag`}
+                        className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+                      />
                     </div>
 
-                    <div className="flex items-center justify-between pt-2 border-t border-border/10">
-                      <span className="text-xs text-muted-foreground">
-                        Top Developers
-                      </span>
-                      <div className="flex items-center space-x-1">
-                        <span className="text-xs font-mono font-bold bg-secondary px-2.5 py-0.5 rounded text-foreground">
-                          {c.developerCount.toLocaleString()}
+                    {/* Metadata */}
+                    <div className="flex-1 flex flex-col justify-between space-y-2">
+                      <div>
+                        <h3 className="font-bold text-foreground group-hover:text-primary transition-colors text-base truncate">
+                          {c.geoName}
+                        </h3>
+                        <p className="text-xs text-muted-foreground font-mono mt-0.5 truncate uppercase">
+                          {c.country}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-2 border-t border-border/10">
+                        <span className="text-xs text-muted-foreground">
+                          Top Developers
                         </span>
-                        <ChevronRight className="h-3 w-3 text-muted-foreground group-hover:text-primary transition-colors" />
+                        <div className="flex items-center space-x-1">
+                          <span className="text-xs font-mono font-bold bg-secondary px-2.5 py-0.5 rounded text-foreground">
+                            {c.developerCount.toLocaleString()}
+                          </span>
+                          <ChevronRight className="h-3 w-3 text-muted-foreground group-hover:text-primary transition-colors" />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
+                  </CardContent>
+                </Card>
+              </Link>
+            );
+          })}
         </div>
       ) : (
         <div className="text-center py-20 border border-dashed border-border/40 rounded-2xl">

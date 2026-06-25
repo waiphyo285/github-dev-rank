@@ -1,8 +1,7 @@
 import React from "react";
-import { BookOpen, Info, Calendar, Zap, Users, Scale } from "lucide-react";
+import { BookOpen, Calendar, Zap, Users, Scale } from "lucide-react";
 import { GithubIcon as Github } from "@/components/custom/github-icon";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { buttonVariants } from "@/components/ui/button";
 
 export const revalidate = 3600; // Hourly cache
 
@@ -12,7 +11,6 @@ export default function AboutPage() {
       {/* Header */}
       <div className="border-b border-border/20 pb-6">
         <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent flex items-center gap-2.5">
-          <Info className="h-7 w-7 text-primary animate-pulse" />
           <span>About</span>
         </h1>
         <p className="text-sm text-muted-foreground mt-1">

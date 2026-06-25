@@ -255,8 +255,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                 ) : (
                   <Button
                     variant="outline"
-                    disabled
                     className="h-9 border-border disabled:opacity-50 flex items-center gap-1 cursor-not-allowed px-3 text-sm"
+                    disabled
                   >
                     <ChevronLeft className="h-4 w-4" />
                     <span>Prev</span>
@@ -278,8 +278,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                 ) : (
                   <Button
                     variant="outline"
-                    disabled
                     className="h-9 border-border disabled:opacity-50 flex items-center gap-1 cursor-not-allowed px-3 text-sm"
+                    disabled
                   >
                     <span>Next</span>
                     <ChevronRight className="h-4 w-4" />

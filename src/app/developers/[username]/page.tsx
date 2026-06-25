@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getDeveloperByUsername, getCountries } from "@/lib/data";
+import { fetchGitHubData } from "@/lib/github";
 import { Avatar } from "@/components/ui/avatar";
 import {
   Building,
@@ -10,11 +11,11 @@ import {
   ArrowLeft,
   ExternalLink,
   Globe,
-  Sparkles,
   Zap,
   Star,
   Activity,
   Image as ImageIcon,
+  Code2,
 } from "lucide-react";
 import { GithubIcon as Github } from "@/components/custom/github-icon";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -46,26 +47,44 @@ export default async function DeveloperProfilePage({
   const username = routeParams.username;
   const searchParamsVal = await searchParams;
 
-  // Fetch developer details
-  const dev = getDeveloperByUsername(username);
+  // Fetch developer details from cache
+  const cachedDev = getDeveloperByUsername(username);
 
-  // If not found, trigger 404
-  if (!dev) {
+  // If user is not in cache, 404 immediately
+  if (!cachedDev) {
     notFound();
   }
+
+  // Construct mutable developer details clone
+  const dev = { ...cachedDev };
+
+  // Fetch live developer data from GitHub
+  const liveData = await fetchGitHubData(username);
+
+  // Merge live data details if available
+  if (liveData) {
+    dev.avatarUrl = liveData.avatarUrl;
+    dev.name = liveData.name;
+    dev.followers = liveData.followers;
+    dev.location = liveData.location;
+    dev.company = liveData.company;
+  }
+
+  const topLang = liveData ? liveData.topLanguage : "N/A";
+  const stars = liveData ? liveData.stars.toLocaleString() : "N/A";
 
   // Look up country flag
   const countries = getCountries();
   const countryMeta = countries.find(
-    (c) => c.country.toLowerCase() === dev.country.toLowerCase(),
+    (c) => c.country.toLowerCase() === dev.country.toLowerCase()
   );
 
   // Calculate percentages/stats for visual interest
-  // Assume a default population scale context (just for visual dashboard polish)
   const totalInCountry = countryMeta ? countryMeta.developerCount : 1000;
-  const countryPercentage = ((dev.countryRank / totalInCountry) * 100).toFixed(
-    2,
-  );
+  const countryPercentage =
+    dev.countryRank && totalInCountry
+      ? ((dev.countryRank / totalInCountry) * 100).toFixed(2)
+      : "0.00";
 
   // Custom score calculations for visual bars
   const totalContributions = dev.publicContributions + dev.privateContributions;
@@ -114,9 +133,9 @@ export default async function DeveloperProfilePage({
           countryMeta={countryMeta}
           trigger={
             <Button
-              variant="outline"
               size="sm"
-              className="h-9 gap-1.5 border-primary/30 hover:bg-primary/10 hover:text-primary transition-all text-xs font-semibold cursor-pointer"
+              variant="default"
+              className="h-9 gap-1.5 text-xs font-semibold cursor-pointer"
             >
               <ImageIcon className="h-4 w-4" />
               <span>Save</span>
@@ -152,12 +171,6 @@ export default async function DeveloperProfilePage({
                 <h1 className="text-3xl font-extrabold text-foreground tracking-tight">
                   {dev.name || dev.login}
                 </h1>
-
-                {/* Score badge */}
-                <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20 shadow-[0_0_15px_rgba(16,185,129,0.05)]">
-                  <Sparkles className="h-3 w-3" />
-                  <span>Score: {dev.score.toLocaleString()}</span>
-                </div>
               </div>
 
               <div className="text-lg font-mono text-muted-foreground/80">
@@ -238,7 +251,7 @@ export default async function DeveloperProfilePage({
               <span className="text-xs font-bold font-mono text-muted-foreground uppercase tracking-wider">
                 Followers Rank
               </span>
-              <Award className="h-5 w-5 text-indigo-400" />
+              <Award className="h-5 w-5 text-emerald-400" />
             </div>
             <div>
               <div className="text-4xl font-extrabold tracking-tight font-mono text-foreground">
@@ -313,7 +326,7 @@ export default async function DeveloperProfilePage({
                   Global Rank
                 </h4>
                 <p className="text-2xl font-bold font-mono text-foreground mt-0.5">
-                  #{dev.globalRank?.toLocaleString()}
+                  {dev.globalRank && dev.globalRank > 0 ? `#${dev.globalRank.toLocaleString()}` : "Unranked"}
                 </p>
               </div>
               <span className="text-xs font-semibold px-2.5 py-1 bg-secondary text-foreground rounded border border-border">
@@ -328,17 +341,25 @@ export default async function DeveloperProfilePage({
                   Rank in {dev.countryName}
                 </h4>
                 <p className="text-2xl font-bold font-mono text-primary mt-0.5">
-                  #{dev.countryRank.toLocaleString()}
+                  {dev.countryRank && dev.countryRank > 0 ? `#${dev.countryRank.toLocaleString()}` : "Unranked"}
                 </p>
               </div>
-              <div className="text-right">
-                <span className="text-xs font-semibold px-2.5 py-1 bg-primary/10 text-primary rounded border border-primary/20 block text-center">
-                  Top {countryPercentage}%
-                </span>
-                <span className="text-[10px] text-muted-foreground mt-1 block">
-                  Out of {totalInCountry.toLocaleString()} devs
-                </span>
-              </div>
+              {dev.countryRank && dev.countryRank > 0 ? (
+                <div className="text-right">
+                  <span className="text-xs font-semibold px-2.5 py-1 bg-primary/10 text-primary rounded border border-primary/20 block text-center">
+                    Top {countryPercentage}%
+                  </span>
+                  <span className="text-[10px] text-muted-foreground mt-1 block">
+                    Out of {totalInCountry.toLocaleString()} devs
+                  </span>
+                </div>
+              ) : (
+                <div className="text-right">
+                  <span className="text-xs font-semibold px-2.5 py-1 bg-secondary text-muted-foreground rounded border border-border block text-center">
+                    Unranked
+                  </span>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -352,7 +373,33 @@ export default async function DeveloperProfilePage({
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
+            {/* Real-time GitHub Stats */}
+            <div className="grid grid-cols-1 gap-2.5">
+              {/* Top Language */}
+              <div className="flex items-center justify-between p-2.5 bg-secondary/20 rounded-xl border border-border/10">
+                <div className="flex items-center gap-2">
+                  <Code2 className="h-4 w-4 text-purple-500" />
+                  <span className="text-xs font-semibold text-muted-foreground">Top Language</span>
+                </div>
+                <span className="font-bold font-mono text-sm text-foreground">
+                  {topLang}
+                </span>
+              </div>
+
+              {/* Total Stars */}
+              <div className="flex items-center justify-between p-2.5 bg-secondary/20 rounded-xl border border-border/10">
+                <div className="flex items-center gap-2">
+                  <Star className="h-4 w-4 text-yellow-500 fill-yellow-500/20" />
+                  <span className="text-xs font-semibold text-muted-foreground">Total Stars</span>
+                </div>
+                <span className="font-bold font-mono text-sm text-foreground">
+                  {stars}
+                </span>
+              </div>
+            </div>
+
+            {/* Public vs Private index */}
+            <div className="space-y-2 pt-1">
               <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>Public vs Private index:</span>
                 <span className="font-semibold text-foreground font-mono">
@@ -371,11 +418,18 @@ export default async function DeveloperProfilePage({
 
             <div className="pt-2 text-xs text-muted-foreground leading-relaxed space-y-2">
               <p>
-                🏆 <strong>Global Ranking:</strong> With a score index of{" "}
-                <strong>{dev.score.toLocaleString()}</strong>, this developer
-                ranks <strong>#{dev.globalRank?.toLocaleString()}</strong>{" "}
-                worldwide. Explore top developers from the same country and see
-                how they compare in our developer directory.
+                <strong>Global Ranking:</strong>{" "}
+                {dev.globalRank && dev.globalRank > 0 ? (
+                  <>
+                    With a score index of <strong>{dev.score.toLocaleString()}</strong>, this developer
+                    ranks <strong>#{dev.globalRank.toLocaleString()}</strong> worldwide.
+                  </>
+                ) : (
+                  <>
+                    This developer is currently unranked in the global leaderboard.
+                  </>
+                )}
+                {" "}Explore top developers from the same country and see how they compare in our developer directory.
               </p>
             </div>
 

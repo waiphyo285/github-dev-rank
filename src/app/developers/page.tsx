@@ -224,7 +224,6 @@ export default async function DevelopersPage({ searchParams }: PageProps) {
                 {renderSortLink("score", "Score")}
               </th>
               <th className="py-4 px-6 font-medium w-44">Location</th>
-              <th className="py-4 px-6 font-medium w-16">Profile</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border/20">
@@ -312,16 +311,6 @@ export default async function DevelopersPage({ searchParams }: PageProps) {
                       )}
                     </div>
                   </td>
-
-                  {/* Detail link */}
-                  <td className="py-4 px-6">
-                    <Link
-                      href={`/developers/${dev.login}${currentQuery}`}
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-secondary/60 text-muted-foreground hover:text-primary hover:bg-secondary/100 transition-colors border border-border/40"
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </Link>
-                  </td>
                 </tr>
               ))
             ) : (
@@ -330,8 +319,16 @@ export default async function DevelopersPage({ searchParams }: PageProps) {
                   colSpan={7}
                   className="py-12 text-center text-muted-foreground font-medium"
                 >
-                  No developers found matching the filters. Try adjusting your
-                  search query.
+                  <p>No countries found matching your search or filters.</p>
+                  <Link
+                    href="/developers"
+                    className={buttonVariants({
+                      variant: "link",
+                      className: "text-primary mt-2 inline-flex items-center",
+                    })}
+                  >
+                    Reset Filters
+                  </Link>
                 </td>
               </tr>
             )}
@@ -363,8 +360,8 @@ export default async function DevelopersPage({ searchParams }: PageProps) {
             ) : (
               <Button
                 variant="outline"
-                disabled
                 className="h-9 border-border disabled:opacity-50 flex items-center gap-1 cursor-not-allowed px-3 text-sm"
+                disabled
               >
                 <ChevronLeft className="h-4 w-4" />
                 <span>Prev</span>
@@ -425,8 +422,8 @@ export default async function DevelopersPage({ searchParams }: PageProps) {
             ) : (
               <Button
                 variant="outline"
-                disabled
                 className="h-9 border-border disabled:opacity-50 flex items-center gap-1 cursor-not-allowed px-3 text-sm"
+                disabled
               >
                 <span>Next</span>
                 <ChevronRight className="h-4 w-4" />
